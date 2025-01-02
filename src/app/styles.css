@@ -1,0 +1,16 @@
+button {
+  background-color: #3470e0;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #2857b8;
+}
+
+.place-select {
+  transition: background-color 0.2s;
+}
+
+.place-select:hover {
+  background-color: #e0e0e0;
+}

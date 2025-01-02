@@ -16,8 +16,6 @@ async function getCoordinates(google, location) {
     geocoder.geocode({ address: location }, (results, status) => {
       if (status === "OK") {
         resolve({ results });
-      } else {
-        reject(new Error(`Geocoding failed with status: ${status}`));
       }
     });
   });
@@ -49,6 +47,11 @@ async function initMap(location = "Lawrence, Kansas") {
       zoom: 20,
       mapTypeId: "hybrid",
       mapId: " ",
+      mapTypeControl: true,
+      mapTypeControlOptions: {
+        style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+        position: google.maps.ControlPosition.TOP_CENTER,
+      },
     });
     currentMap.setTilt(45);
 
@@ -83,6 +86,7 @@ async function findNearbyPlaces(location = "Lawrence, Kansas") {
 }
 
 let markers = [];
+let polylines = [];
 
 const marker_colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "gray", "black"];
 
@@ -106,7 +110,11 @@ async function createMarkerForPlace(place) {
     map: currentMap,
     position: place.location,
     content: place_marker,
+    title: place.displayName || '',
   });
+  if (markers.length > 0) {
+    connectMarkers(markers[markers.length - 1], marker);
+  }
   // Check if the marker is already in the array
   if (!markers.some(m => m.position.equals(marker.position))) {
     markers.push(marker);
@@ -114,11 +122,9 @@ async function createMarkerForPlace(place) {
   return marker;
 }
 
-async function removeMarkers() {
-  markers.forEach((marker) => {
-    marker.setMap(null);
-  });
-  markers = [];
+async function removeMarker() {
+  markers[markers.length - 1].setMap(null);
+  markers.pop();
 }
 
 async function findPlacesByText(placeName) {
@@ -144,4 +150,108 @@ async function findPlacesByText(placeName) {
   }
 }
 
-export { initMap, findNearbyPlaces, createMarkerForPlace, removeMarkers, findPlacesByText };
+async function connectMarkers(marker1, marker2) {
+  const loader = await getLoader();
+  const google = await loader.load();
+  const { Polyline } = await google.maps.importLibrary("marker");
+  const lineSymbol = {
+    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+  };
+  const polyline = new google.maps.Polyline({
+    path: [marker1.position, marker2.position],
+    strokeColor: "black",
+    strokeOpacity: 1.0,
+    strokeWeight: 2,
+    icons: [
+      {
+        icon: lineSymbol,
+        offset: "100%",
+      },
+    ],
+    map: currentMap,
+  });
+  polyline.addListener("click", (e) => {
+    handleClick(e);
+  });
+
+  polylines.push(polyline);
+}
+
+function handleClick(event) {
+  // Highlight all polylines
+  for (let i = 0; i < polylines.length; i++) {
+    polylines[i].setOptions({ strokeColor: "#ffd505" });
+  }
+  
+  // Create buttons container
+  const buttonsDiv = document.createElement('div');
+  buttonsDiv.className = 'trip-buttons';
+  buttonsDiv.style.cssText = `
+    position: absolute;
+    z-index: 1000;
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  `;
+
+  // Create save button
+  const saveButton = document.createElement('button');
+  saveButton.textContent = 'Save Trip';
+  saveButton.style.cssText = `
+    background: green;
+    color: white;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 0 5px;
+  `;
+  saveButton.onclick = () => {
+    // TODO: Add save trip logic here
+    buttonsDiv.remove();
+  };
+
+  // Create cancel button
+  const cancelButton = document.createElement('button');
+  cancelButton.textContent = 'Cancel';
+  cancelButton.style.cssText = `
+    background: red;
+    color: white;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 0 5px;
+  `;
+  cancelButton.onclick = () => {
+    buttonsDiv.remove();
+  };
+
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = 'X';
+  deleteButton.style.cssText = `
+    color: black;
+    background: white;
+    border-radius: 4px;
+    padding: 8px;
+  `;
+  deleteButton.onclick = () => {
+    buttonsDiv.remove();
+    for (let i = 0; i < polylines.length; i++) {
+      polylines[i].setOptions({ strokeColor: "black" });
+    }
+  };
+  // Add buttons to container
+  buttonsDiv.appendChild(saveButton);
+  buttonsDiv.appendChild(cancelButton);
+  buttonsDiv.appendChild(deleteButton);
+
+  // Position the buttons at the click location
+  const mapDiv = document.getElementById('map');
+  mapDiv.appendChild(buttonsDiv);
+
+  // Position buttons at the mouse click position
+  if (event && event.domEvent) {  // Use domEvent instead of latLng
+    buttonsDiv.style.left = `${event.domEvent.clientX}px`;
+    buttonsDiv.style.top = `${event.domEvent.clientY}px`;
+  }
+}
+
+export { initMap, findNearbyPlaces, createMarkerForPlace, removeMarker, findPlacesByText };
