@@ -7,10 +7,32 @@ button:hover {
   background-color: #2857b8;
 }
 
-.place-select {
+.place-select, .generate-place-button {
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+  height: fit-content;
+  min-height: min-content;
+  background-color: #f7f7f7;
+  cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .place-select:hover {
   background-color: #e0e0e0;
+}
+
+.find-place-button, .begin-trip-button {
+  background-color: #3470e0;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+}
+
+.find-place-button:hover {
+  background-color: #2857b8;
 }

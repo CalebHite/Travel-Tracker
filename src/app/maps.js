@@ -1,8 +1,11 @@
 import { Loader } from "@googlemaps/js-api-loader";
+import { generatePlaceSuggestion } from "./ai";
+
+const apiKey = "AIzaSyC2VxgZvQjAbSeS_aWlo28xsqdJ4mydxaA"; 
 
 async function getLoader() {
   const loader = new Loader({
-    apiKey: "",
+    apiKey: apiKey,
     version: "weekly",
     libraries: ["places", "geocoding"],
   });
@@ -46,7 +49,7 @@ async function initMap(location = "Lawrence, Kansas") {
       center: { lat, lng },
       zoom: 20,
       mapTypeId: "hybrid",
-      mapId: " ",
+      mapId: "76b769ec81c864d3 ",
       mapTypeControl: true,
       mapTypeControlOptions: {
         style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -60,6 +63,8 @@ async function initMap(location = "Lawrence, Kansas") {
     console.error("Error initializing map:", error);
   }
 }
+
+let visited_places = []
 
 async function findNearbyPlaces(location = "Lawrence, Kansas") {
   const loader = await getLoader();
@@ -82,13 +87,16 @@ async function findNearbyPlaces(location = "Lawrence, Kansas") {
 
   //@ts-ignore
   const { places } = await Place.searchNearby(request);
+  places.forEach(place => {
+    visited_places.push(place);
+  });
   return places;
 }
 
 let markers = [];
 let polylines = [];
 
-const marker_colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "gray", "black"];
+const marker_colors = ["#b82f28", "#2857b8", "#568f4a", "#b88828", "#4e3d7a", "#b87228", "#b828ae", "#63392b", "#9e3c99", "#212121"];
 
 async function createMarkerForPlace(place) {
   const loader = await getLoader();
@@ -96,8 +104,9 @@ async function createMarkerForPlace(place) {
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const place_marker = document.createElement("div");
   place_marker.className = "place-marker";
-  place_marker.textContent = markers.length;
+  place_marker.textContent = markers.length + 1;
   place_marker.style.backgroundColor = marker_colors[markers.length % marker_colors.length];
+
   // Use existing map if available, otherwise create new one
   if (!currentMap) {
     currentMap = await initMap(place.displayName);
@@ -143,7 +152,8 @@ async function findPlacesByText(placeName) {
     //@ts-ignore
     const { places } = await Place.searchByText(request);
     currentMap.setCenter(places[0].location);
-    return places; // Return the first (most relevant) result
+    visited_places.push(places[0]);
+    return places;
   } catch (error) {
     console.error("Error finding place:", error);
     return null;
@@ -254,4 +264,10 @@ function handleClick(event) {
   }
 }
 
-export { initMap, findNearbyPlaces, createMarkerForPlace, removeMarker, findPlacesByText };
+async function placeSuggestion(){
+  const place = await generatePlaceSuggestion(visited_places);
+  console.log(place);
+  return place;
+}
+
+export { initMap, findNearbyPlaces, createMarkerForPlace, removeMarker, findPlacesByText, placeSuggestion };
