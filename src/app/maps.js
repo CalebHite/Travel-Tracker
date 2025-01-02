@@ -2,7 +2,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 
 async function getLoader() {
   const loader = new Loader({
-    apiKey: "AIzaSyC2VxgZvQjAbSeS_aWlo28xsqdJ4mydxaA",
+    apiKey: "",
     version: "weekly",
     libraries: ["places", "geocoding"],
   });
@@ -48,7 +48,7 @@ async function initMap(location = "Lawrence, Kansas") {
       center: { lat, lng },
       zoom: 20,
       mapTypeId: "hybrid",
-      mapId: "76b769ec81c864d3 ",
+      mapId: " ",
     });
     currentMap.setTilt(45);
 
@@ -84,17 +84,22 @@ async function findNearbyPlaces(location = "Lawrence, Kansas") {
 
 let markers = [];
 
-export async function createMarkerForPlace(place) {
+const marker_colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "gray", "black"];
+
+async function createMarkerForPlace(place) {
   const loader = await getLoader();
   const google = await loader.load();
   const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
   const place_marker = document.createElement("div");
   place_marker.className = "place-marker";
   place_marker.textContent = markers.length;
-  
+  place_marker.style.backgroundColor = marker_colors[markers.length % marker_colors.length];
   // Use existing map if available, otherwise create new one
   if (!currentMap) {
     currentMap = await initMap(place.displayName);
+  } else {
+    // Recenter the map to the new marker's location
+    currentMap.setCenter(place.location);
   }
   
   const marker = new AdvancedMarkerElement({
@@ -109,12 +114,34 @@ export async function createMarkerForPlace(place) {
   return marker;
 }
 
-export async function removeMarkers() {
+async function removeMarkers() {
   markers.forEach((marker) => {
     marker.setMap(null);
   });
   markers = [];
 }
 
-export { initMap, findNearbyPlaces };
+async function findPlacesByText(placeName) {
+  const loader = await getLoader();
+  const google = await loader.load();
 
+  const { Place } = await google.maps.importLibrary("places");
+
+  const request = {
+    textQuery: placeName,
+    fields: ["displayName", "location", "businessStatus"],
+    locationBias: currentMap ? currentMap.getCenter() : undefined
+  };
+
+  try {
+    //@ts-ignore
+    const { places } = await Place.searchByText(request);
+    currentMap.setCenter(places[0].location);
+    return places; // Return the first (most relevant) result
+  } catch (error) {
+    console.error("Error finding place:", error);
+    return null;
+  }
+}
+
+export { initMap, findNearbyPlaces, createMarkerForPlace, removeMarkers, findPlacesByText };
