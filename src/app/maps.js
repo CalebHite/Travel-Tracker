@@ -1,7 +1,7 @@
 import { Loader } from "@googlemaps/js-api-loader";
 import { generatePlaceSuggestion } from "./ai";
 
-const apiKey = "AIzaSyC2VxgZvQjAbSeS_aWlo28xsqdJ4mydxaA"; 
+const apiKey = process.env.NEXT_PUBLIC_MAPS_API_KEY; 
 
 async function getLoader() {
   const loader = new Loader({

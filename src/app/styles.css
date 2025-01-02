@@ -18,6 +18,14 @@ button:hover {
   transition: background-color 0.2s;
 }
 
+.generate-place-button {
+  color: #3470e0;
+}
+
+.generate-place-button:hover {
+  background-color: #e0e0e0;
+}
+
 .place-select:hover {
   background-color: #e0e0e0;
 }
