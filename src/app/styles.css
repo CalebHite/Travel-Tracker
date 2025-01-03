@@ -44,3 +44,21 @@ button:hover {
 .find-place-button:hover {
   background-color: #2857b8;
 }
+
+.place-select {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown {
+  display: none;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+.place-select:hover .dropdown {
+  display: block;
+}

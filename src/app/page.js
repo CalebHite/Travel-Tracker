@@ -1,5 +1,5 @@
 "use client"
-import { initMap, findNearbyPlaces, createMarkerForPlace, findPlacesByText, placeSuggestion as getPlaceSuggestion } from './maps';
+import { initMap, findNearbyPlaces, createMarkerForPlace, findPlacesByText, placeSuggestion as getPlaceSuggestion} from './maps';
 import { useEffect, useState } from 'react';
 import './styles.css'
 import Image from 'next/image';
@@ -10,6 +10,7 @@ export default function Home() {
   const [places, setPlaces] = useState([]);
   const [placeName, setPlaceName] = useState("");
   const [suggestion, setSuggestion] = useState("");
+  const [suggestedPlace, setSuggestedPlace] = useState(null);
   useEffect(() => {
     if (beginTrip) {
       findNearbyPlaces(location).then((places) => setPlaces(places));
@@ -33,10 +34,17 @@ export default function Home() {
   }
 
   const handleSuggestedPlaceClick = () => {
+    if (suggestedPlace) {
+      handleCreateMarker(suggestedPlace);
+      setSuggestion("");
+      setSuggestedPlace(null);  
+    }
+  }
+
+  const handleSuggestedPlaceHover = () => {
     findPlacesByText(suggestion).then((places) => {
       if (places && places.length > 0) {
-        handleCreateMarker(places[0]);
-        setSuggestion("");
+        setSuggestedPlace(places[0]);
       }
     });
   }
@@ -65,7 +73,9 @@ export default function Home() {
             height: "700px", 
             marginTop: "100px", 
             marginLeft: "1%",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.3)"
+            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+            overflowY: "auto",
+            padding: "0 10px 10px"
           }}>
             <div style={{ 
               position: "sticky",
@@ -84,55 +94,68 @@ export default function Home() {
                 Find Place
               </button>
             </div>
-            {!suggestion && <div 
-              className="generate-place-button"
-              onClick={() => handleGeneratePlaceSuggestion()}
-              style={{
-                padding: "10px",
-                cursor: "pointer",
-                borderBottom: "1px solid #eee",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <h2 style={{
-                background: "linear-gradient(90deg, #8B5CF6, #3B82F6)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                marginRight: "5px",
-              }}>Generate Trip Suggestion</h2>
-              <Image 
-                src="/google-gemini-icon.webp" 
-                alt="Gemini Icon" 
-                width={20} 
-                height={20}
-                style={{ background: "none" }}
-              />
-            </div>}
-            {suggestion && <div 
-              className="place-select"
-              style={{
-                padding: "10px",
-                cursor: "pointer",
-                borderBottom: "1px solid #eee",
-                fontWeight: "bold",
-              }}
-              onClick={handleSuggestedPlaceClick}
-            >
-              <h2>Suggested Place: {suggestion}</h2>
-            </div>}
-            {places.map((place) => (
-              place.businessStatus === "OPERATIONAL" && (
-                <div 
-                  className="place-select" 
-                  key={place.placeId} 
-                  onClick={() => handleCreateMarker(place)}
-                >
-                  <h2>{place.displayName}</h2>
-                </div>
-              )
-            ))}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {!suggestion && <div 
+                key="generate-suggestion"
+                className="generate-place-button"
+                onClick={() => handleGeneratePlaceSuggestion()}
+                style={{
+                  padding: "10px",
+                  cursor: "pointer",
+                  borderBottom: "1px solid #eee",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <h2 style={{
+                  background: "linear-gradient(90deg, #8B5CF6, #3B82F6)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  marginRight: "5px",
+                }}>Generate Trip Suggestion</h2>
+                <Image 
+                  src="/google-gemini-icon.webp" 
+                  alt="Gemini Icon" 
+                  width={20} 
+                  height={20}
+                  style={{ background: "none" }}
+                />
+              </div>}
+              {suggestion && <div 
+                key="suggested-place"
+                className="place-select"
+                style={{
+                  padding: "10px",
+                  cursor: "pointer",
+                  borderBottom: "1px solid #eee",
+                }}
+                onMouseEnter={handleSuggestedPlaceHover}
+                onClick={handleSuggestedPlaceClick}
+              >
+                <h2>Suggested Place: {suggestion}</h2>
+                {suggestedPlace && <div className="dropdown">
+                  <p style={{ fontWeight: "bold" }}>{suggestedPlace.formattedAddress}</p>
+                  <p>{suggestedPlace.rating}★</p>
+                  <p>{suggestedPlace.editorialSummary}</p>
+                </div>}
+              </div>}
+              {places.map((place) => (
+                place.businessStatus === "OPERATIONAL" && (
+                  <div 
+                    key={place.id || place.name}
+                    className="place-select" 
+                  >
+                    <h2 onClick={() => handleCreateMarker(place)}>{place.displayName}</h2>
+                    <div className="dropdown">
+                      <p style={{ fontWeight: "bold" }}>{place.formattedAddress}</p>
+                      <p>{place.rating}★</p>
+                      <p>{place.editorialSummary}</p>
+                    </div>
+                  </div>
+                )
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -15,15 +15,21 @@ async function getLoader() {
 async function getCoordinates(google, location) {
   const geocoder = new google.maps.Geocoder();
   
-  const { results } = await new Promise((resolve, reject) => {
+  const result = await new Promise((resolve, reject) => {
     geocoder.geocode({ address: location }, (results, status) => {
       if (status === "OK") {
         resolve({ results });
+      } else {
+        reject(new Error(`Geocoding failed: ${status}`));
       }
     });
   });
 
-  return results[0].geometry.location.toJSON(); 
+  if (!result.results || result.results.length === 0) {
+    throw new Error("No results found for this location");
+  }
+
+  return result.results[0].geometry.location.toJSON();
 }
 
 let currentMap = null;
@@ -78,7 +84,7 @@ async function findNearbyPlaces(location = "Lawrence, Kansas") {
   );
 
   const request = {
-    fields: ["displayName", "location", "businessStatus"],
+    fields: ["displayName", "location", "businessStatus", "rating", "formattedAddress", "editorialSummary"],
     locationRestriction: {
       center: { lat, lng },
       radius: 500,
@@ -132,11 +138,20 @@ async function createMarkerForPlace(place) {
 }
 
 async function removeMarker() {
-  markers[markers.length - 1].setMap(null);
-  markers.pop();
+  // Remove all markers from the map
+  markers.forEach(marker => marker.setMap(null));
+  markers = [];
+
+  // Remove all polylines from the map
+  polylines.forEach(polyline => polyline.setMap(null));
+  polylines = [];
 }
 
 async function findPlacesByText(placeName) {
+  if (!placeName || typeof placeName !== 'string') {
+    throw new Error("Please provide a valid search term");
+  }
+
   const loader = await getLoader();
   const google = await loader.load();
 
@@ -144,19 +159,24 @@ async function findPlacesByText(placeName) {
 
   const request = {
     textQuery: placeName,
-    fields: ["displayName", "location", "businessStatus"],
+    fields: ["displayName", "location", "businessStatus", "rating", "formattedAddress", "editorialSummary"],
     locationBias: currentMap ? currentMap.getCenter() : undefined
   };
 
   try {
     //@ts-ignore
     const { places } = await Place.searchByText(request);
+    
+    if (!places || places.length === 0) {
+      throw new Error("No places found matching your search");
+    }
+
     currentMap.setCenter(places[0].location);
     visited_places.push(places[0]);
     return places;
   } catch (error) {
     console.error("Error finding place:", error);
-    return null;
+    throw error; // Re-throw the error to be handled by the calling function
   }
 }
 
@@ -209,12 +229,18 @@ function handleClick(event) {
   const saveButton = document.createElement('button');
   saveButton.textContent = 'Save Trip';
   saveButton.style.cssText = `
-    background: green;
+    background: #568f4a;
     color: white;
     border-radius: 4px;
     padding: 8px;
     margin: 0 5px;
   `;
+  saveButton.addEventListener("mouseover", () => {
+    saveButton.style.backgroundColor = "#467a3d";
+  });
+  saveButton.addEventListener("mouseout", () => {
+    saveButton.style.backgroundColor = "#568f4a";
+  });
   saveButton.onclick = () => {
     // TODO: Add save trip logic here
     buttonsDiv.remove();
@@ -222,16 +248,23 @@ function handleClick(event) {
 
   // Create cancel button
   const cancelButton = document.createElement('button');
-  cancelButton.textContent = 'Cancel';
+  cancelButton.textContent = 'Delete';
   cancelButton.style.cssText = `
-    background: red;
+    background: #b82f28;
     color: white;
     border-radius: 4px;
     padding: 8px;
     margin: 0 5px;
   `;
-  cancelButton.onclick = () => {
+  cancelButton.addEventListener("mouseover", () => {
+    cancelButton.style.backgroundColor = "#a62b24";
+  });
+  cancelButton.addEventListener("mouseout", () => {
+    cancelButton.style.backgroundColor = "#b82f28";
+  });
+  cancelButton.onclick = () => {    
     buttonsDiv.remove();
+    removeMarker();
   };
 
   const deleteButton = document.createElement('button');
