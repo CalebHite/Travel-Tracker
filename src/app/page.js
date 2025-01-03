@@ -3,7 +3,7 @@ import { initMap, findNearbyPlaces, createMarkerForPlace, findPlacesByText, plac
 import { useEffect, useState } from 'react';
 import './styles.css'
 import Image from 'next/image';
-
+import { PinataService } from './pinata';
 export default function Home() {
   const [location, setLocation] = useState("");
   const [beginTrip, setBeginTrip] = useState(false);
@@ -11,6 +11,9 @@ export default function Home() {
   const [placeName, setPlaceName] = useState("");
   const [suggestion, setSuggestion] = useState("");
   const [suggestedPlace, setSuggestedPlace] = useState(null);
+
+  const pinata = new PinataService();
+
   useEffect(() => {
     if (beginTrip) {
       findNearbyPlaces(location).then((places) => setPlaces(places));
@@ -49,8 +52,23 @@ export default function Home() {
     });
   }
 
+  const handleSaveTrip = async () => {
+    const ipfsHash = await pinata.saveTrip(places);
+    console.log(ipfsHash);
+  }
+  const handleGetTrips = async () => {
+    const trips = await pinata.getAllTrips();
+    console.log(trips);
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+      <button onClick={() => {
+        handleSaveTrip();
+      }}>Save Trip</button>
+      <button onClick={() => {
+        handleGetTrips();
+      }}>Get Trips</button>
       {!beginTrip && <div style={{ marginTop: "20%" }}>
         <input type="text" id="location" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} style={{ padding: "5px", borderRadius: "5px", border: "1px solid #ccc" }}  />
         <button onClick={() => {
