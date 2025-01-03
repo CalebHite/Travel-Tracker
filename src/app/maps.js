@@ -1,5 +1,8 @@
 import { Loader } from "@googlemaps/js-api-loader";
 import { generatePlaceSuggestion } from "./ai";
+import { PinataService } from "./pinata";
+
+const pinata = new PinataService();
 
 const apiKey = process.env.NEXT_PUBLIC_MAPS_API_KEY; 
 
@@ -242,7 +245,13 @@ function handleClick(event) {
     saveButton.style.backgroundColor = "#568f4a";
   });
   saveButton.onclick = () => {
-    // TODO: Add save trip logic here
+    pinata.saveTrip(visited_places).then((ipfsHash) => {
+      alert("Trip Saved!");
+      console.log("Trip saved to IPFS with hash:", ipfsHash);
+    });
+    for (let i = 0; i < polylines.length; i++) {
+      polylines[i].setOptions({ strokeColor: "black" });
+    }
     buttonsDiv.remove();
   };
 
@@ -299,7 +308,6 @@ function handleClick(event) {
 
 async function placeSuggestion(){
   const place = await generatePlaceSuggestion(visited_places);
-  console.log(place);
   return place;
 }
 
