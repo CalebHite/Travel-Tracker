@@ -4,15 +4,23 @@ import { PinataService } from "./pinata";
 
 const pinata = new PinataService();
 
-const apiKey = process.env.NEXT_PUBLIC_MAPS_API_KEY; 
+// Define all required libraries upfront
+const DEFAULT_LIBRARIES = ["places", "marker", "geocoding"];
 
+// Remove the duplicate loader configurations
+export const loaderOptions = {
+  apiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY,
+  version: "weekly",
+  libraries: DEFAULT_LIBRARIES
+};
+
+// Create a singleton loader instance
+export const loader = new Loader(loaderOptions);
+let loaderInstance = loader;
+
+// Simplify getLoader function
 async function getLoader() {
-  const loader = new Loader({
-    apiKey: apiKey,
-    version: "weekly",
-    libraries: ["places", "geocoding"],
-  });
-  return loader;
+  return loaderInstance;
 }
 
 async function getCoordinates(google, location) {
@@ -105,7 +113,7 @@ async function findNearbyPlaces(location = "Lawrence, Kansas") {
 let markers = [];
 let polylines = [];
 
-const marker_colors = ["#b82f28", "#2857b8", "#568f4a", "#b88828", "#4e3d7a", "#b87228", "#b828ae", "#63392b", "#9e3c99", "#212121"];
+export const marker_colors = ["#b82f28", "#2857b8", "#568f4a", "#b88828", "#4e3d7a", "#b87228", "#b828ae", "#63392b", "#9e3c99", "#212121"];
 
 async function createMarkerForPlace(place) {
   const loader = await getLoader();

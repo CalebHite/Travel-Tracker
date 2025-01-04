@@ -53,7 +53,7 @@ export default function Trip({ location, setLocation, beginTrip, setBeginTrip })
 
   return (
     <div>
-      <div id="map" style={{ height: "800px", width: "100%" }}></div>
+      <div id="map" style={{ height: "900px", width: "100%" }}></div>
       {beginTrip && (
         <div>
           <div id="places" style={{ 

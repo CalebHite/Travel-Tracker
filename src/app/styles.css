@@ -62,3 +62,124 @@ button:hover {
 .place-select:hover .dropdown {
   display: block;
 }
+
+.trips-gallery {
+  padding: 2rem;
+}
+
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.trip-card {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.trip-card:hover {
+  transform: translateY(-4px);
+}
+
+.trip-map {
+  width: 100%;
+  height: 200px;
+}
+
+.trip-info {
+  padding: 1rem;
+  background: white;
+}
+
+.trip-info h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.trip-info p {
+  margin: 0.5rem 0 0;
+  color: #666;
+}
+
+/* Main Menu Styles */
+.main-menu {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+  padding: 4rem 2rem;
+}
+
+.menu-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.menu-header h1 {
+  font-size: 3rem;
+  color: #2857b8;
+  margin-bottom: 1rem;
+}
+
+.menu-header p {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.location-input-container {
+  max-width: 600px;
+  margin: 0 auto 4rem;
+  text-align: center;
+}
+
+.location-input {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.2rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+}
+
+.location-input:focus {
+  border-color: #3470e0;
+  box-shadow: 0 0 0 3px rgba(52, 112, 224, 0.1);
+  outline: none;
+}
+
+/* Past Trips Section */
+.trips-section {
+  margin-top: 4rem;
+  padding-top: 3rem;
+  border-top: 2px solid #e0e0e0;
+}
+
+.trips-section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.trips-section-header h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.trips-gallery {
+  padding: 0;
+}
+
+.trip-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+}
+
+.trip-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}

@@ -67,11 +67,7 @@ export class PinataService {
           try {
             const gateway = `https://gateway.pinata.cloud/ipfs/${pin.ipfs_pin_hash}`;
             const tripResponse = await fetch(gateway);
-            const rawData = await tripResponse.text(); // Get raw text first
-            
-            // Log the raw response for debugging
-            console.log('Raw IPFS response:', rawData);
-            
+            const rawData = await tripResponse.text(); // Get raw text first            
             // Try to parse the JSON
             const tripData = JSON.parse(rawData);
             
