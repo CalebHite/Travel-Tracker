@@ -3,6 +3,7 @@ import { initMap, findNearbyPlaces, createMarkerForPlace, findPlacesByText, plac
 import { useEffect, useState } from 'react';
 import '../styles.css'
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Trip({ location, setLocation, beginTrip, setBeginTrip }) {
   const [places, setPlaces] = useState([]);
@@ -56,6 +57,28 @@ export default function Trip({ location, setLocation, beginTrip, setBeginTrip })
       <div id="map" style={{ height: "900px", width: "100%" }}></div>
       {beginTrip && (
         <div>
+          <Link href="/">
+            <button
+              style={{
+                position: "absolute",
+                top: "20px",
+                left: "20px",
+                zIndex: "1000",
+                padding: "10px 20px",
+                backgroundColor: "white",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                cursor: "pointer",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px"
+              }}
+              onClick={() => setBeginTrip(false)}
+            >
+              ← Back
+            </button>
+          </Link>
           <div id="places" style={{ 
             display: "flex", 
             flexDirection: "column",
